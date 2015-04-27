@@ -1330,6 +1330,33 @@ static int MojoGui_ncurses_productkey(const char *desc, const char *fmt,
     return retval;
 } // MojoGui_ncurses_productkey
 
+static int MojoGui_ncurses_option(const char *desc, char *buf, const int buflen,
+                                  boolean can_back, boolean can_fwd)
+{
+    // !!! FIXME: need max text entry of (buflen)
+    char *prompt = xstrdup(_(desc));
+    boolean getout = false;
+    int retval = 0;
+
+    while (!getout)
+    {
+        char *text = inputBox(prompt, &retval, can_back, buf);
+
+        if (retval != 1)
+            getout = true;
+        else
+        {
+            snprintf(buf, buflen, "%s", text);
+            getout = true;
+        } // else
+        free(text);
+    } // while
+
+    free(prompt);
+
+    return retval;
+} // MojoGui_ncurses_option
+
 
 static boolean MojoGui_ncurses_insertmedia(const char *medianame)
 {

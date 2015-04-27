@@ -403,6 +403,14 @@ function Setup.ProductKey(tab)
     })
 end
 
+function Setup.ConfigOption(tab)
+    return sanitize("ConfigOption", tab,
+    {
+        { "description", nil, mustExist, mustBeString, cantBeEmpty },
+        { "verify", nil, mustBeFunction },
+    })
+end
+
 function Setup.Media(tab)
     return sanitize("Media", tab,
     {

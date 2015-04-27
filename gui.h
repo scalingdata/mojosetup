@@ -102,6 +102,8 @@ struct MojoGui
                           int *command, boolean can_back, boolean can_fwd);
     int (*productkey)(const char *desc, const char *fmt, char *buf,
                       const int buflen, boolean can_back, boolean can_fwd);
+    int (*option)(const char *desc, char *buf, const int buflen,
+                  boolean can_back, boolean can_fwd);
     boolean (*insertmedia)(const char *medianame);
     void (*progressitem)(void);
     boolean (*progress)(const char *type, const char *component,
@@ -150,6 +152,9 @@ static char *MojoGui_##module##_destination(const char **r, int recnum, \
 static int MojoGui_##module##_productkey(const char *desc, const char *fmt, \
                             char *buf, const int buflen, boolean can_back, \
                             boolean can_fwd); \
+static int MojoGui_##module##_option(const char *desc, char *buf, \
+                            const int buflen, boolean can_back, \
+                            boolean can_fwd); \
 static boolean MojoGui_##module##_insertmedia(const char *medianame); \
 static void MojoGui_##module##_progressitem(void); \
 static boolean MojoGui_##module##_progress(const char *typ, const char *comp, \
@@ -173,6 +178,7 @@ const MojoGui *MojoGuiPlugin_##module(int rev, const MojoSetupEntryPoints *e) \
             MojoGui_##module##_options, \
             MojoGui_##module##_destination, \
             MojoGui_##module##_productkey, \
+            MojoGui_##module##_option, \
             MojoGui_##module##_insertmedia, \
             MojoGui_##module##_progressitem, \
             MojoGui_##module##_progress, \

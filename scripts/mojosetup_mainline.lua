@@ -1240,6 +1240,47 @@ local function get_productkey(thisstage, maxstage, desc, fmt, verify, dest, mani
     return 1
 end
 
+local function get_option(thisstage, maxstage, desc, verify, manifestkey)
+    local optionValue = nil
+    local userOptionValue = nil
+    local retval = nil
+
+    -- Retrieve the previous entry, in case we're stepping back over a stage.
+    --  This lets the user edit it or jsut move forward without typing the
+    --  whole thing again.
+    if MojoSetup.options[desc] ~= nil then
+        userOptionValue = MojoSetup.options[desc].user_option
+    end
+
+    while optionValue == nil do
+        retval, userOptionValue = MojoSetup.gui.option(desc, userOptionValue, thisstage, maxstage)
+        if retval ~= 1 then
+            return retval  -- user hit back or cancel.
+        end
+
+        optionValue = userOptionValue
+        if verify ~= nil then
+            local ok, newOptionValue = verify(userOptionValue)
+            if not ok then
+                MojoSetup.msgbox(
+                    _("Invalid option"),
+                    _("That option appears to be invalid. Please try again."))
+                optionValue = nil
+            elseif newOptionValue ~= nil then
+                optionValue = newOptionValue
+            end
+        end
+    end
+
+    MojoSetup.options[desc] = {
+        option = optionValue,
+        user_option = userOptionValue,
+        component = manifestkey
+    }
+
+    return 1
+end
+
 
 local function start_gui(desc, splashfname, splashpos)
     if splashfname ~= nil then
@@ -1423,6 +1464,19 @@ local function do_install(install)
                 set_destination(dst)
             end
             return rc
+        end
+    end
+
+    -- Next stage: enter all global options. These are global options
+    --  for the install.
+    MojoSetup.options = {}
+    if install.configoptions ~= nil then
+        for k,optkey in pairs(install.configoptions) do
+            -- (optkey) becomes an upvalue in this function.
+            stages[#stages+1] = function(thisstage, maxstage)
+                return get_option(thisstage, maxstage, optkey.description,
+                                  optkey.verify, MojoSetup.metadatakey)
+            end
         end
     end
 
@@ -1864,6 +1918,7 @@ local function do_install(install)
     MojoSetup.stages = nil
     MojoSetup.files = nil
     MojoSetup.productkeys = nil
+    MojoSetup.options = nil
     MojoSetup.media = nil
     MojoSetup.written = 0
     MojoSetup.totalwrite = 0

@@ -1644,6 +1644,36 @@ static int luahook_gui_productkey(lua_State *L)
     return 2;
 } // luahook_gui_productkey
 
+static int luahook_gui_option(lua_State *L)
+{
+    const char *desc = luaL_checkstring(L, 1);
+    const char *defval = lua_tostring(L, 2);
+    const int thisstage = luaL_checkinteger(L, 3);
+    const int maxstage = luaL_checkinteger(L, 4);
+    const boolean can_go_back = canGoBack(thisstage);
+    const boolean can_go_fwd = canGoForward(thisstage, maxstage);
+    const int fmtlen = 1024;
+    char *buf = (char *) xmalloc(fmtlen);
+    int cmd = 0;
+
+    assert((defval == NULL) || (((int)strlen(defval)) < fmtlen));
+    strcpy(buf, (defval == NULL) ? "" : defval);
+
+    cmd = GGui->option(desc, buf, fmtlen, can_go_back, can_go_fwd);
+    if (cmd != 1)
+    {
+        free(buf);
+        buf = NULL;
+    } // if
+    lua_pushinteger(L, cmd);
+    lua_pushstring(L, buf);  // may be NULL
+    if (buf != NULL)
+    {
+        free(buf);
+    }
+    return 2;
+} // luahook_gui_option
+
 
 static int luahook_gui_insertmedia(lua_State *L)
 {
@@ -1872,6 +1902,7 @@ boolean MojoLua_initLua(void)
             set_cfunc(luaState, luahook_gui_options, "options");
             set_cfunc(luaState, luahook_gui_destination, "destination");
             set_cfunc(luaState, luahook_gui_productkey, "productkey");
+            set_cfunc(luaState, luahook_gui_option, "option");
             set_cfunc(luaState, luahook_gui_insertmedia, "insertmedia");
             set_cfunc(luaState, luahook_gui_progressitem, "progressitem");
             set_cfunc(luaState, luahook_gui_progress, "progress");

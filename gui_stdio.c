@@ -559,6 +559,47 @@ static int MojoGui_stdio_productkey(const char *desc, const char *fmt,
     return retval;
 } // MojoGui_stdio_productkey
 
+static int MojoGui_stdio_option(const char *desc, char *buf, const int buflen,
+                                boolean can_back, boolean can_fwd)
+{
+    const char *prompt = xstrdup(_(desc));
+    char *defval = ((*buf) ? xstrdup(buf) : NULL);
+    boolean getout = false;
+    int retval = -1;
+    char *msg = NULL;
+
+    if (defval != NULL)
+    {
+        char *locfmt = xstrdup(_("(just press enter to use '%0')"));
+        msg = format(locfmt, defval);
+        free(locfmt);
+    } // if
+
+    while (!getout)
+    {
+        int len;
+        printf("\n\n%s\n", desc);
+        if (msg != NULL)
+            printf("%s\n", msg);
+        if ((len = readstr(prompt, buf, buflen, can_back, false)) < 0)
+            getout = true;
+        else
+        {
+            if ((len == 0) && (defval != NULL))
+                strcpy(buf, defval);
+
+            retval = 1;
+            getout = true;
+        } // else
+    } // while
+
+    free(msg);
+    free(defval);
+    free((void *) prompt);
+
+    return retval;
+} // MojoGui_stdio_option
+
 
 static boolean MojoGui_stdio_insertmedia(const char *medianame)
 {
